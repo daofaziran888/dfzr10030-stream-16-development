@@ -17,6 +17,8 @@ class Settings:
     )
     page_size_default: int = 20
     page_size_max: int = 200
+    # 背压积压续送：默认队列上限（行）。页面上可绑定到具体背压策略的「队列上限」。
+    backlog_queue_limit: int = 200
 
 
 settings = Settings()

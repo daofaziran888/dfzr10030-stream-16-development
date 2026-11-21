@@ -14,6 +14,7 @@ from app.fixtures import (
     RULE_TRIGGERS, METRIC_DEFS, QUALITY_SAMPLES,
     PARTITION_STATS, EVENT_ROUTES,
 )
+from app.services.backlog_segment import BacklogSegmentService
 from app.store import store
 
 
@@ -211,6 +212,27 @@ def run_checkpoint_state_pipeline() -> dict:
     return result
 
 
+# Pipeline 8: backlog_segment -> backlog_segment -> cdc_task
+def run_backlog_resume_pipeline() -> dict:
+    """背压积压段续送：容量切片、旧段优先、回执核验后释放容量。"""
+    svc = BacklogSegmentService()
+    plan = svc.preview()
+    dispatch = [item["段编号"] for item in plan["预计调度"]]
+    pause = [item["段编号"] for item in plan["预计暂停"]]
+    cursors = {cursor["源表"]: cursor.get("续送起点") for cursor in svc.list_cursors()}
+    result = {
+        "queue_limit": plan["队列上限"],
+        "remaining": plan["剩余容量"],
+        "next_source": plan["下一源表"],
+        "dispatch": dispatch,
+        "pause": pause,
+        "resume_points": cursors,
+        "handoff": len(svc.cdc_intervals()),
+    }
+    _wr("backlog_resume", {"source": ["backlog_segment", "backpressure"], "target": "cdc_task", "payload": result})
+    return result
+
+
 def run_all_pipelines() -> dict:
     return {
         "source_cdc": run_source_cdc_pipeline(),
@@ -220,6 +242,7 @@ def run_all_pipelines() -> dict:
         "quality_scan": run_quality_scan(),
         "partition_bp": run_partition_backpressure_pipeline(),
         "checkpoint_state": run_checkpoint_state_pipeline(),
+        "backlog_resume": run_backlog_resume_pipeline(),
     }
 
 

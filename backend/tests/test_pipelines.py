@@ -5,7 +5,7 @@ from app.services.pipeline_orchestrator import (
     run_rule_router_pipeline, run_metric_sink_pipeline,
     run_quality_scan, run_partition_backpressure_pipeline,
     run_checkpoint_state_pipeline, run_all_pipelines,
-    list_pipeline_results,
+    run_backlog_resume_pipeline, list_pipeline_results,
 )
 from app.store import store
 
@@ -129,12 +129,27 @@ class TestCheckpointState:
         assert any(pr["pipeline_id"] == "checkpoint_state" for pr in results)
 
 
+class TestBacklogResume:
+    def test_plan_points_at_orders(self):
+        r = run_backlog_resume_pipeline()
+        assert r["queue_limit"] == 200
+        assert r["next_source"] == "orders"
+        assert r["dispatch"] == ["SEG-0001"]
+        assert "SEG-0003" in r["pause"]
+        assert r["resume_points"]["orders"] == 1000
+
+    def test_pipeline_result_written(self):
+        run_backlog_resume_pipeline()
+        results = list_pipeline_results()
+        assert any(pr["pipeline_id"] == "backlog_resume" for pr in results)
+
+
 class TestRunAllPipelines:
     def test_all_pipelines_run(self):
         r = run_all_pipelines()
         keys = ["source_cdc", "window_metric", "rule_router", "metric_sink",
-                "quality_scan", "partition_bp", "checkpoint_state"]
+                "quality_scan", "partition_bp", "checkpoint_state", "backlog_resume"]
         for k in keys:
             assert k in r, f"Missing {k}"
         results = list_pipeline_results()
-        assert len(results) == 7
+        assert len(results) == 8

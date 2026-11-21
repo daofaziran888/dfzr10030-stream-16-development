@@ -8,7 +8,7 @@ from app.services.pipeline_orchestrator import (
     run_source_cdc_pipeline, run_window_metric_pipeline,
     run_rule_router_pipeline, run_metric_sink_pipeline,
     run_quality_scan, run_partition_backpressure_pipeline,
-    run_checkpoint_state_pipeline,
+    run_checkpoint_state_pipeline, run_backlog_resume_pipeline,
 )
 
 router = APIRouter(prefix="/api/pipeline", tags=["管道编排"])
@@ -52,6 +52,11 @@ def trigger_quality_scan() -> dict:
 @router.post("/partition-bp")
 def trigger_partition_bp() -> dict:
     return {"ok": True, "result": run_partition_backpressure_pipeline()}
+
+
+@router.post("/backlog-resume")
+def trigger_backlog_resume() -> dict:
+    return {"ok": True, "result": run_backlog_resume_pipeline()}
 
 
 @router.post("/checkpoint-state")

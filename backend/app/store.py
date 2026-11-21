@@ -16,7 +16,7 @@ class Store:
         }
 
     def module_names(self) -> list[str]:
-        return sorted(self._tables)
+        return sorted(name for name in self._tables if not name.startswith("_"))
 
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
@@ -44,6 +44,10 @@ class Store:
             {"label": "异常量", "value": sum(int(item["abnormal"]) for item in modules)},
         ]
         return {"cards": cards, "modules": modules}
+
+    def internal_rows(self, name: str) -> list[dict[str, Any]]:
+        """服务内部状态表（以 _ 开头）不下发到概览，只给业务服务读写。"""
+        return self.rows(name)
 
 
 store = Store()

@@ -240,6 +240,19 @@ class ReplayBatchEntry(BaseModel):
     field_6: str | None = None  # 当前位点
     field_7: str | None = None  # 跳过策略
 
+class BacklogSegmentEntry(BaseModel):
+    """背压积压段明细结构。"""
+
+    field_0: str | None = None  # 段编号
+    field_1: str | None = None  # 源表
+    field_2: str | None = None  # 源端编号
+    field_3: str | None = None  # 起始位点
+    field_4: str | None = None  # 结束位点
+    field_5: str | None = None  # 数据行数
+    field_6: str | None = None  # 续送起点
+    field_7: str | None = None  # 来源类型
+    field_8: str | None = None  # 入库回执
+
 class GrpPartitionEntry(BaseModel):
     """分组策略明细结构。"""
 

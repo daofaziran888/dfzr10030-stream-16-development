@@ -19,6 +19,7 @@ const MetricCalc = () => import('@/views/metric_calc/index.vue')
 const EventRouter = () => import('@/views/event_router/index.vue')
 const ReplayBatch = () => import('@/views/replay_batch/index.vue')
 const GrpPartition = () => import('@/views/grp_partition/index.vue')
+const BacklogSegment = () => import('@/views/backlog_segment/index.vue')
 
 const router = createRouter({
   history: createWebHistory(),
@@ -42,6 +43,7 @@ const router = createRouter({
     { path: '/event_router', name: 'event_router', component: EventRouter },
     { path: '/replay_batch', name: 'replay_batch', component: ReplayBatch },
     { path: '/grp_partition', name: 'grp_partition', component: GrpPartition },
+    { path: '/backlog_segment', name: 'backlog_segment', component: BacklogSegment },
   ],
 })
 
